@@ -6,7 +6,7 @@
 ## This code is free, you may do whatever you want with it.
 
 function die {
-	echo $1
+	echo $*
 	exit 1
 }
 
@@ -58,7 +58,7 @@ mkdir -p $NEW_WORKSPACE/.metadata/.plugins/org.eclipse.core.runtime/ $NEW_WORKSP
 
 cp -R $OLD_WORKSPACE/.metadata/.plugins/org.eclipse.core.runtime/.settings/ $NEW_WORKSPACE/.metadata/.plugins/org.eclipse.core.runtime/ || die Could not copy old settings
 
-if [ "$LAUNCH_CONFIG_COPY" != "" -a "$LAUNCH_CONFIG_COPY" != "n" -a "$LAUNCH_CONFIG_COPY" != "N"  ]; then
+if [ "$LAUNCH_CONFIG_COPY" != "" -a "$LAUNCH_CONFIG_COPY" != "n" -a "$LAUNCH_CONFIG_COPY" != "N" -a -d $OLD_WORKSPACE/.metadata/.plugins/org.eclipse.debug.core/.launches ]; then
 	cp -R $OLD_WORKSPACE/.metadata/.plugins/org.eclipse.debug.core/.launches/ $NEW_WORKSPACE/.metadata/.plugins/org.eclipse.debug.core/ || die Could not copy your launch configuration
 fi
 
