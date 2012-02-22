@@ -6,7 +6,7 @@
 ## This code is free, you may do whatever you want with it.
 
 function die {
-	echo $1
+	echo $*
 	exit 1
 }
 
@@ -20,6 +20,8 @@ if [ "$#" = "1" -a "$1" = "-i" ]; then
 	read OLD_WORKSPACE
 	echo -n "Path to new workspace: "
 	read NEW_WORKSPACE
+	echo -n "Do you want to copy your launch configs too? (y/N)"
+	read LAUNCH_CONFIG_COPY
 fi
 
 if [ "$#" = "2" ]; then
@@ -27,8 +29,14 @@ if [ "$#" = "2" ]; then
 	NEW_WORKSPACE=$2;
 fi
 
-if [ "$#" = "0" -o "$#" -gt "2" ]; then
-	echo usage: $0 [-i] old-workspace new-workspace
+if [ "$#" = "3" -a "$1" = "-l" ]; then
+	LAUNCH_CONFIG_COPY=Y;
+	OLD_WORKSPACE=$2;
+	NEW_WORKSPACE=$3;
+fi
+
+if [ "$#" = "0" -o "$#" -gt "3" ]; then
+	echo usage: $0 [-i] [-l] old-workspace new-workspace
 	exit 1
 fi
 
@@ -44,11 +52,15 @@ if [[ ! ( ( -d "$WORKSPACE_DIR" ) && ( -w "$WORKSPACE_DIR" ) ) ]]; then
 	exit 1
 fi
 
-mkdir -p $NEW_WORKSPACE || die Could not create directory $NEW_WORKSPACE
+mkdir -p "$NEW_WORKSPACE" || die Could not create directory $NEW_WORKSPACE
 
-mkdir -p $NEW_WORKSPACE/.metadata/.plugins/org.eclipse.core.runtime/ || die Could not create eclipse settings directory
+mkdir -p "$NEW_WORKSPACE/.metadata/.plugins/org.eclipse.core.runtime/" "$NEW_WORKSPACE/.metadata/.plugins/org.eclipse.debug.core/" || die Could not create eclipse settings directory
 
-cp -R $OLD_WORKSPACE/.metadata/.plugins/org.eclipse.core.runtime/.settings/ $NEW_WORKSPACE/.metadata/.plugins/org.eclipse.core.runtime/ || die Could not copy old settings
+cp -R "$OLD_WORKSPACE/.metadata/.plugins/org.eclipse.core.runtime/.settings/" "$NEW_WORKSPACE/.metadata/.plugins/org.eclipse.core.runtime/" || die Could not copy old settings
+
+if [ "$LAUNCH_CONFIG_COPY" != "" -a "$LAUNCH_CONFIG_COPY" != "n" -a "$LAUNCH_CONFIG_COPY" != "N" -a -d "$OLD_WORKSPACE/.metadata/.plugins/org.eclipse.debug.core/.launches" ]; then
+	cp -R "$OLD_WORKSPACE/.metadata/.plugins/org.eclipse.debug.core/.launches/" "$NEW_WORKSPACE/.metadata/.plugins/org.eclipse.debug.core/" || die Could not copy your launch configuration
+fi
 
 echo New workspace created. Now start your Eclipse and point it to the $NEW_WORKSPACE workspace
 
